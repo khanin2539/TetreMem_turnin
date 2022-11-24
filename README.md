@@ -10,3 +10,4 @@ Basic Block:
   2. continue quantizing from 
     layer 1: convolution layer->batch normalization->relu layer->convolution layer->batch normalization.
     layer 2: convolution layer->batch normalization->relu layer->convolution layer->batch normalization.
+ascwawdwd
