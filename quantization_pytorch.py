@@ -243,39 +243,70 @@ class ResNet(nn.Module):
          
         return self._forward_impl(x)
 
-def test(model, device, test_loader, quantize=False, fbgemm=False, all_layers=True):
+def test(model, device, test_loader, quantize=False, fbgemm=False, all_layers=True, is_relu=False):
     
     model.eval()
     # begin qauntization if True
     if quantize:
         if all_layers:
-            layes_to_fuse = [['conv1', 'bn1'],
-                       ['layer1.0.conv1', 'layer1.0.bn1'],
-                       ['layer1.0.conv2', 'layer1.0.bn2'],
-                       ['layer1.1.conv1', 'layer1.1.bn1'],
-                       ['layer1.1.conv2', 'layer1.1.bn2'],
-                       ['layer2.0.conv1', 'layer2.0.bn1'],
-                       ['layer2.0.conv2', 'layer2.0.bn2'],
-                       ['layer2.0.downsample.0', 'layer2.0.downsample.1'],
-                       ['layer2.1.conv1', 'layer2.1.bn1'],
-                       ['layer2.1.conv2', 'layer2.1.bn2'],
-                       ['layer3.0.conv1', 'layer3.0.bn1'],
-                       ['layer3.0.conv2', 'layer3.0.bn2'],
-                       ['layer3.0.downsample.0', 'layer3.0.downsample.1'],
-                       ['layer3.1.conv1', 'layer3.1.bn1'],
-                       ['layer3.1.conv2', 'layer3.1.bn2'],
-                       ['layer4.0.conv1', 'layer4.0.bn1'],
-                       ['layer4.0.conv2', 'layer4.0.bn2'],
-                       ['layer4.0.downsample.0', 'layer4.0.downsample.1'],
-                       ['layer4.1.conv1', 'layer4.1.bn1'],
-                       ['layer4.1.conv2', 'layer4.1.bn2']]
+            if is_relu:
+                layers_to_fuse = [['conv1', 'bn1', 'relu'],
+                        ['layer1.0.conv1', 'layer1.0.bn1','layer1.0.relu' ],
+                        ['layer1.0.conv2', 'layer1.0.bn2'],
+                        ['layer1.1.conv1', 'layer1.1.bn1','layer1.1.relu' ],
+                        ['layer1.1.conv2', 'layer1.1.bn2'],
+                        ['layer2.0.conv1', 'layer2.0.bn1','layer2.0.relu' ],
+                        ['layer2.0.conv2', 'layer2.0.bn2'],
+                        ['layer2.0.downsample.0', 'layer2.0.downsample.1'],
+                        ['layer2.1.conv1', 'layer2.1.bn1','layer2.1.relu' ],
+                        ['layer2.1.conv2', 'layer2.1.bn2'],
+                        ['layer3.0.conv1', 'layer3.0.bn1','layer3.0.relu' ],
+                        ['layer3.0.conv2', 'layer3.0.bn2'],
+                        ['layer3.0.downsample.0', 'layer3.0.downsample.1'],
+                        ['layer3.1.conv1', 'layer3.1.bn1','layer3.1.relu' ],
+                        ['layer3.1.conv2', 'layer3.1.bn2'],
+                        ['layer4.0.conv1', 'layer4.0.bn1','layer4.0.relu' ],
+                        ['layer4.0.conv2', 'layer4.0.bn2'],
+                        ['layer4.0.downsample.0', 'layer4.0.downsample.1'],
+                        ['layer4.1.conv1', 'layer4.1.bn1','layer4.1.relu' ],
+                        ['layer4.1.conv2', 'layer4.1.bn2']]
+            else:
+                layers_to_fuse = [['conv1', 'bn1'],
+                        ['layer1.0.conv1', 'layer1.0.bn1'],
+                        ['layer1.0.conv2', 'layer1.0.bn2'],
+                        ['layer1.1.conv1', 'layer1.1.bn1'],
+                        ['layer1.1.conv2', 'layer1.1.bn2'],
+                        ['layer2.0.conv1', 'layer2.0.bn1'],
+                        ['layer2.0.conv2', 'layer2.0.bn2'],
+                        ['layer2.0.downsample.0', 'layer2.0.downsample.1'],
+                        ['layer2.1.conv1', 'layer2.1.bn1'],
+                        ['layer2.1.conv2', 'layer2.1.bn2'],
+                        ['layer3.0.conv1', 'layer3.0.bn1'],
+                        ['layer3.0.conv2', 'layer3.0.bn2'],
+                        ['layer3.0.downsample.0', 'layer3.0.downsample.1'],
+                        ['layer3.1.conv1', 'layer3.1.bn1'],
+                        ['layer3.1.conv2', 'layer3.1.bn2'],
+                        ['layer4.0.conv1', 'layer4.0.bn1'],
+                        ['layer4.0.conv2', 'layer4.0.bn2'],
+                        ['layer4.0.downsample.0', 'layer4.0.downsample.1'],
+                        ['layer4.1.conv1', 'layer4.1.bn1'],
+                        ['layer4.1.conv2', 'layer4.1.bn2']]
+                        
+                
         else:
+            if is_relu:
             # quantize one conv layer
-            layes_to_fuse = [['conv1', 'bn1'],
-                    ['layer1.0.conv1', 'layer1.0.bn1'],
-                    ['layer1.0.conv2', 'layer1.0.bn2'],
-                    ['layer1.1.conv1', 'layer1.1.bn1'],
-                    ['layer1.1.conv2', 'layer1.1.bn2']]
+                layers_to_fuse = [['conv1', 'bn1', 'relu'],
+                        ['layer1.0.conv1', 'layer1.0.bn1','layer1.0.relu' ],
+                        ['layer1.0.conv2', 'layer1.0.bn2'],
+                        ['layer1.1.conv1', 'layer1.1.bn1','layer1.1.relu' ],
+                        ['layer1.1.conv2', 'layer1.1.bn2']]
+            else:
+                layers_to_fuse = [['conv1', 'bn1'],
+                        ['layer1.0.conv1', 'layer1.0.bn1'],
+                        ['layer1.0.conv2', 'layer1.0.bn2'],
+                        ['layer1.1.conv1', 'layer1.1.bn1'],
+                        ['layer1.1.conv2', 'layer1.1.bn2']]
 
 
         # we attached the global qconfig, in this case we used fbgemm for x86 CPU
@@ -285,7 +316,7 @@ def test(model, device, test_loader, quantize=False, fbgemm=False, all_layers=Tr
             model.qconfig = torch.quantization.default_qconfig
 
         # We fused targetted layers
-        model = torch.quantization.fuse_modules(model, layes_to_fuse)
+        model = torch.quantization.fuse_modules(model, layers_to_fuse)
         # we prepared the model for static quantization heere where we inserted obervers for calibration
         torch.quantization.prepare(model, inplace=True)
         # take dropout  layers for inference
@@ -339,7 +370,17 @@ model.load_state_dict(torch.load("DF20M-ResNet18_best_accuracy.pth"))
 print(model.eval())
 # Baseline performance - unquantized model
 test(model, device=device, test_loader=test_loader)
+
+# Is relu True
 # quantized model all layers
-test(model, device=device, test_loader=test_loader, quantize=True,all_layers=True)
+test(model, device=device, test_loader=test_loader, quantize=True,all_layers=True, is_relu=True)
 # quantized model only 1 conv layer
-test(model, device=device, test_loader=test_loader, quantize=True,all_layers=False)
+test(model, device=device, test_loader=test_loader, quantize=True,all_layers=False, is_relu=True)
+
+
+# Is relu False
+# quantized model all layers
+test(model, device=device, test_loader=test_loader, quantize=True,all_layers=True, is_relu=False)
+# quantized model only 1 conv layer
+test(model, device=device, test_loader=test_loader, quantize=True,all_layers=False, is_relu=False)
+
