@@ -246,6 +246,7 @@ class ResNet(nn.Module):
 def test(model, device, test_loader, quantize=False, fbgemm=False, all_layers=True, is_relu=False):
     
     model.eval()
+    avg_elapsed = []
     # begin qauntization if True
     if quantize:
         if all_layers:
@@ -349,6 +350,8 @@ def test(model, device, test_loader, quantize=False, fbgemm=False, all_layers=Tr
             outputs = model(data)
             # end time
             et = time.time()
+            elapsed_time = (et - st) * 1000
+            avg_elapsed.append(elapsed_time)
             pred = torch.argmax(outputs, dim=-1) # get the index of the max probability
             # get correct predictions
             num_correct += int((pred == label).sum())
@@ -358,9 +361,10 @@ def test(model, device, test_loader, quantize=False, fbgemm=False, all_layers=Tr
     torch.save(model.state_dict(), "model_size.pth")
     print('Model Size (MB):', os.path.getsize("model_size.pth")/1e6)
     os.remove('model_size.pth')
+    average = sum(avg_elapsed)/len(avg_elapsed)
     print('\nAccuracy: {}/{} ({:.0f}%)\n'.format(num_correct, len(test_loader.dataset),
         100. * num_correct / len(test_loader.dataset)))
-    print('Elapsed inference time = {:0.4f} milliseconds'.format((et - st) * 1000))
+    print('Elapsed inference time = {:0.4f} milliseconds'.format(average))
     print("===============================================")
 
 
