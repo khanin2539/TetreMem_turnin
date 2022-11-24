@@ -1,13 +1,50 @@
-# TetreMem_turnin
 
 1. We quantized the model starting from 
 
 Basic Block:
-  1. begin convolution layer->batch normalization->relu layer.
-  2. perform float functional add at the end of each basic block
- Resnet Block:
+	1. begin convolution layer->batch normalization->relu layer.
+  	2. perform float functional add at the end of each basic block
+Resnet Block:
   1. Quantize the input layer
   2. continue quantizing from 
-    layer 1: convolution layer->batch normalization->relu layer->convolution layer->batch normalization.
-    layer 2: convolution layer->batch normalization->relu layer->convolution layer->batch normalization.
-ascwawdwd
+	convolution layer->batch normalization->relu
+    	layer 1.0: convolution0 layer (int8)->batch normalization0 (int8)->relu layer0 (int8)
+	layer 1.1: convolution layer1 (int8)->batch normalization1 (int8)->relu layer1 (int8).
+    	layer 2.0: convolution0 layer (int8)->batch normalization0 (int8)->relu layer0 (int8)->downsample convolution layer (int8)->downsamplebatch normalization (int8).
+	layer 2.1: convolution layer1 (int8)->batch normalization1 (int8)
+	layer 3.0: convolution0 layer (int8)->batch normalization0 (int8)->relu layer0 (int8)->downsample convolution layer (int8)->downsamplebatch normalization (int8).
+	layer 3.1: convolution layer1 (int8)->batch normalization1 (int8)
+	layer 4.0: convolution0 layer (int8)->batch normalization0 (int8)->relu layer0 (int8)->downsample convolution layer (int8)->downsamplebatch normalization (int8).
+	layer 4.1: convolution layer1 (int8)->batch normalization1 (int8)
+	layer 5: fully connected layer (float32).
+2. We performed the following:
+ 	2.1 added quantized functional unit add on the end of the basic block
+	2.2 on the Resnet block, used quantization function QuantStub to convert tensors from floating point to quantized value
+	2.3 on the Resnet block, used quantization function DeQuantStub to convert tensors from quantized to floating point
+	2.4 attached the global qconfig, in this case we used fbgemm for x86 CPU
+	2.5 fused targetted layers. We mapped layers by creating lists specifying convolution, batchnorm, relu on each resnet layers
+	2.6 prepared the model for static quantization heere where we inserted obervers for calibration
+	2.7 calibrated the model with representative testing data
+	2.8 converted the observed model to  a quantized model here where we quantized the weights compute and stored weight scale & bias
+3. We show the results of fully quantized model and one quantized convolution+batchnorm+relu layer here. We used model size, elapsed inference time, and accuracy as metrics to compare baseline and quantized models.
+	3.1 baseline: 
+		model size: 45.15 MB
+		accuracy: 51/3638 (1.398%)
+		inference time: 2096.66 milliseconds
+	3.2 fully quantized model:
+		model size: 11.31 MB
+		accuracy: 6/3638 (0.164%)
+		inference time: 606.44 milliseconds
+	3.3 one quantized layer model:
+		model size: 11.38 MB
+		accuracy: 59/3638 (1.6%)
+		inference time: 839.91 milliseconds
+optional 6: without relu layers:
+	6.1 fully quantized model:
+		model size: 11.31 MB
+		accuracy: 26/3638 (0.712%)
+		inference time: 758.9 milliseconds
+	6.2 one quantized layer model:
+		model size: 11.38 MB
+		accuracy: 50/3638 (1.37%)
+		inference time: 793.85 milliseconds
