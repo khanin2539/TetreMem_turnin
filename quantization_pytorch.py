@@ -323,9 +323,9 @@ def test(model, device, test_loader, quantize=False, fbgemm=False, all_layers=Tr
         # take dropout  layers for inference
         model.eval()
 
-        batch_bar = tqdm(total=len(test_loader), dynamic_ncols=True, position=0, leave=False, desc='Test')
+        batch_bar = tqdm(total=len(train_loader), dynamic_ncols=True, position=0, leave=False, desc='Test')
         with torch.no_grad():
-            for data, target in test_loader:
+            for data, target in train_loader:
                 data, target = data.to(device), target.to(device)
                 data = data.to(torch.float)
                 target = target.to(torch.float)
