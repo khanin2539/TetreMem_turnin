@@ -1,3 +1,7 @@
+Step 0:
+	0.1 Resized all the test images for DFI20mini to 299*299 resolution
+	0.2 fixed the labels of the data (by default has 183 classes (69465 taxonID) but the pretrained model has 182 classes )
+	0.3 mapped the taxonID with the map txt files to have the indexID labels 
 
 1. We quantized the model starting from 
 
